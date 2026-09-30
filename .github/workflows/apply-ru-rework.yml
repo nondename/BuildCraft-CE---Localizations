@@ -35,7 +35,7 @@ jobs:
           python3 -m json.tool src/main/resources/assets/buildcraft/guide/text/ru_ru.json >/dev/null
 
       - name: Validate repository localization rules
-        run: ./gradlew check
+        run: bash gradlew check
 
       - name: Validate diff
         run: git diff --check
