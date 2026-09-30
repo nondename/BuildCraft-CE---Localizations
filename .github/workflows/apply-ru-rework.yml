@@ -7,6 +7,7 @@ on:
     paths:
       - tools/rework_ru_ru.py
       - tools/rework_ru_ru_items.py
+      - tools/rework_ru_ru_guide.py
       - .github/workflows/apply-ru-rework.yml
   workflow_dispatch:
 
@@ -26,9 +27,15 @@ jobs:
         run: |
           python3 tools/rework_ru_ru.py
           python3 tools/rework_ru_ru_items.py
+          python3 tools/rework_ru_ru_guide.py
 
       - name: Validate JSON
-        run: python3 -m json.tool src/main/resources/assets/buildcraft/lang/ru_ru.json >/dev/null
+        run: |
+          python3 -m json.tool src/main/resources/assets/buildcraft/lang/ru_ru.json >/dev/null
+          python3 -m json.tool src/main/resources/assets/buildcraft/guide/text/ru_ru.json >/dev/null
+
+      - name: Validate repository localization rules
+        run: ./gradlew check
 
       - name: Validate diff
         run: git diff --check
@@ -36,12 +43,12 @@ jobs:
       - name: Commit generated localization
         shell: bash
         run: |
-          if git diff --quiet -- src/main/resources/assets/buildcraft/lang/ru_ru.json; then
+          if git diff --quiet -- src/main/resources/assets/buildcraft/lang/ru_ru.json src/main/resources/assets/buildcraft/guide/text/ru_ru.json; then
             echo "No localization changes to commit"
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add src/main/resources/assets/buildcraft/lang/ru_ru.json
-          git commit -m "Improve Russian localization"
+          git add src/main/resources/assets/buildcraft/lang/ru_ru.json src/main/resources/assets/buildcraft/guide/text/ru_ru.json
+          git commit -m "Improve Russian localization and guide"
           git push origin HEAD:ru-ru-rework
