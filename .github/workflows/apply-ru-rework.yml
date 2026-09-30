@@ -6,6 +6,7 @@ on:
       - ru-ru-rework
     paths:
       - tools/rework_ru_ru.py
+      - tools/rework_ru_ru_items.py
       - .github/workflows/apply-ru-rework.yml
   workflow_dispatch:
 
@@ -22,7 +23,9 @@ jobs:
           ref: ru-ru-rework
 
       - name: Apply reviewed translations
-        run: python3 tools/rework_ru_ru.py
+        run: |
+          python3 tools/rework_ru_ru.py
+          python3 tools/rework_ru_ru_items.py
 
       - name: Validate JSON
         run: python3 -m json.tool src/main/resources/assets/buildcraft/lang/ru_ru.json >/dev/null
