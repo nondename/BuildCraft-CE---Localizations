@@ -1,0 +1,43 @@
+name: Export RU audit files
+
+on:
+  push:
+    branches:
+      - ru-ru-rework
+    paths:
+      - '.github/workflows/export-ru-audit.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Collect current English and Russian localization files
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p audit
+          cp src/main/resources/assets/buildcraft/lang/ru_ru.json audit/ru_ru.lang.json
+          cp src/main/resources/assets/buildcraft/guide/text/ru_ru.json audit/ru_ru.guide.json
+          curl --fail --location --retry 3 \
+            https://raw.githubusercontent.com/BCCE-team/BuildCraft/main/source-shared/src/main/resources/assets/buildcraft/lang/en_us.json \
+            -o audit/en_us.lang.json
+          curl --fail --location --retry 3 \
+            https://raw.githubusercontent.com/BCCE-team/BuildCraft/main/source-shared/src/main/resources/assets/buildcraft/guide/text/en_us.json \
+            -o audit/en_us.guide.json
+          python3 -m json.tool audit/en_us.lang.json >/dev/null
+          python3 -m json.tool audit/ru_ru.lang.json >/dev/null
+          python3 -m json.tool audit/en_us.guide.json >/dev/null
+          python3 -m json.tool audit/ru_ru.guide.json >/dev/null
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ru-localization-audit
+          path: audit/
+          if-no-files-found: error
+          retention-days: 1
