@@ -8,6 +8,7 @@ on:
       - tools/rework_ru_ru.py
       - tools/rework_ru_ru_items.py
       - tools/fix_ru_guide_accuracy.py
+      - tools/finalize_ru_guide.py.gz.b64
       - .github/workflows/apply-ru-rework.yml
   workflow_dispatch:
 
@@ -28,6 +29,9 @@ jobs:
           python3 tools/rework_ru_ru.py
           python3 tools/rework_ru_ru_items.py
           python3 tools/fix_ru_guide_accuracy.py
+          base64 -d tools/finalize_ru_guide.py.gz.b64 | gzip -d > tools/finalize_ru_guide_generated.py
+          python3 tools/finalize_ru_guide_generated.py
+          rm tools/finalize_ru_guide_generated.py
 
       - name: Validate JSON
         run: |
