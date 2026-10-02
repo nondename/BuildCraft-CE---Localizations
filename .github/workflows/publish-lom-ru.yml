@@ -1,0 +1,49 @@
+name: Publish LoM Russian localization
+
+on:
+  push:
+    branches:
+      - ru-ru-rework
+    paths:
+      - '.github/workflows/publish-lom-ru.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    env:
+      RELEASE_TAG: lom-ru-1.0.3
+      SOURCE_COMMIT: 25724c747c0b167e5c62e6264b26442bbd25a98e
+    steps:
+      - name: Checkout finalized localization
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.SOURCE_COMMIT }}
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: gradle
+
+      - name: Build validated localization JARs
+        run: |
+          chmod +x gradlew
+          ./gradlew clean build --stacktrace
+
+      - name: Publish 1.20.1 Forge asset
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          jar="$(find versions/1.20.1-forge/build/libs -maxdepth 1 -type f -name '*.jar' | head -n 1)"
+          test -n "$jar"
+          gh release create "$RELEASE_TAG" "$jar" \
+            --repo "$GITHUB_REPOSITORY" \
+            --target "$SOURCE_COMMIT" \
+            --title 'LoM Russian localization 1.0.3' \
+            --notes 'Final Russian localization build for BuildCraft Community Edition 8.x / Minecraft 1.20.1 Forge. Includes the reviewed ru_ru interface translation and Russian Guide Book.'
